@@ -11,16 +11,43 @@ import (
 
 // Conform to the Scanner interface for database/sql
 func (m *Timestamp) Scan(value interface{}) error {
+	// We want a time.Time.
 	t, ok := value.(time.Time)
-	if !ok {
-		return errors.New("incompatible type passed, expected time.Time")
+	if ok {
+		return m.StampFromTime(t)
 	}
 
-	seconds := t.Unix()
+	// Lets try the strings.
+	tString, ok := value.(string)
+	if ok {
+		// Try RFC3339?
+		t, err := time.Parse(time.RFC3339, tString)
+		if err == nil {
+			// Success!
+			return m.StampFromTime(t)
+		}
+
+		// How about RFC3339Nano?
+		t, err = time.Parse(time.RFC3339Nano, tString)
+		if err == nil {
+			return m.StampFromTime(t)
+		}
+
+		// Last try, something simple.
+		t, err = time.Parse("2006-01-02", tString)
+		if err == nil {
+			return m.StampFromTime(t)
+		}
+
+	}
+	return errors.New("incompatible type passed, expected time.Time, or string.")
+}
+
+func (m *Timestamp) StampFromTime(t time.Time) error {
+	seconds := t.UTC().Unix()
 	nanos := int32(t.Sub(time.Unix(seconds, 0)))
 	m.Seconds = seconds
 	m.Nanos = nanos
-
 	return m.validateTimestamp()
 }
 
