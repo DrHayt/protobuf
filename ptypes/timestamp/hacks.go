@@ -57,11 +57,16 @@ func (m *Timestamp) StampFromTime(t time.Time) error {
 
 // Value satisfies the valuer interface for database/sql.  Copied from ptypes.
 func (m *Timestamp) Value() (driver.Value, error) {
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return nil, errors.Wrap(err, "loading timezone data")
+	}
 	var t time.Time
 	if m == nil {
-		t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
+		//t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
+		t = time.Unix(0, 0).In(loc)
 	} else {
-		t = time.Unix(m.Seconds, int64(m.Nanos)).UTC()
+		t = time.Unix(m.Seconds, int64(m.Nanos)).In(loc)
 	}
 	return t, m.validateTimestamp()
 }
