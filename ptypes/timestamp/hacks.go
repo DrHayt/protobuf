@@ -10,15 +10,15 @@ import (
 
 // Conform to the Scanner interface for database/sql
 func (m *Timestamp) Scan(value interface{}) error {
-	// We want a time.Time.
-	t, ok := value.(time.Time)
-	if ok {
-		return m.StampFromTime(t)
-	}
-
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		return errors.Wrap(err, "loading timezone data")
+	}
+
+	// We want a time.Time.
+	t, ok := value.(time.Time)
+	if ok {
+		return m.StampFromTime(t.In(loc))
 	}
 
 	// Lets try the strings.
