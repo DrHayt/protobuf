@@ -1,12 +1,11 @@
 package timestamp
 
 import (
-	"errors"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
-	"database/sql/driver"
-
-	"fmt"
+	"github.com/pkg/errors"
 )
 
 // Conform to the Scanner interface for database/sql
@@ -17,24 +16,29 @@ func (m *Timestamp) Scan(value interface{}) error {
 		return m.StampFromTime(t)
 	}
 
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return errors.Wrap(err, "loading timezone data")
+	}
+
 	// Lets try the strings.
 	tString, ok := value.(string)
 	if ok {
 		// Try RFC3339?
-		t, err := time.Parse(time.RFC3339, tString)
+		t, err := time.ParseInLocation(time.RFC3339, tString, loc)
 		if err == nil {
 			// Success!
 			return m.StampFromTime(t)
 		}
 
 		// How about RFC3339Nano?
-		t, err = time.Parse(time.RFC3339Nano, tString)
+		t, err = time.ParseInLocation(time.RFC3339Nano, tString, loc)
 		if err == nil {
 			return m.StampFromTime(t)
 		}
 
 		// Last try, something simple.
-		t, err = time.Parse("2006-01-02", tString)
+		t, err = time.ParseInLocation("2006-01-02", tString, loc)
 		if err == nil {
 			return m.StampFromTime(t)
 		}
