@@ -49,6 +49,8 @@ func (m *Timestamp) Scan(value interface{}) error {
 			return m.StampFromTime(t)
 		}
 
+		return errors.Errorf("Unable to parse time, value not understood: ", value)
+
 	}
 
 	return errors.Errorf("Unexpected type: %T", value)
