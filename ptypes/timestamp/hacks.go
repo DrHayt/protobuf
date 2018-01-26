@@ -10,15 +10,19 @@ import (
 
 // Conform to the Scanner interface for database/sql
 func (m *Timestamp) Scan(value interface{}) error {
+
+	// We want a time.Time.   We assume that if the driver gives us a time.Time that it is in the appropriate timezone.
+	t, ok := value.(time.Time)
+	if ok {
+		return m.StampFromTime(t)
+	}
+
+	// FIXME -  Ok, tis is a horrible hack.
+	// Safeguard does not store date/time values with timezone.   This means that all dates/times have been stored in America/New_York.
+	// This means we must interpret them as America/New_York
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		return errors.Wrap(err, "loading timezone data")
-	}
-
-	// We want a time.Time.
-	t, ok := value.(time.Time)
-	if ok {
-		return m.StampFromTime(t.In(loc))
 	}
 
 	// Lets try the strings.
@@ -58,11 +62,8 @@ func (m *Timestamp) Scan(value interface{}) error {
 }
 
 func (m *Timestamp) StampFromTime(t time.Time) error {
-	fmt.Printf("Formatting time: %s\n", t)
 	seconds := t.UTC().Unix()
 	nanos := int32(t.Sub(time.Unix(seconds, 0)))
-	//seconds := t.Unix()
-	//nanos := int32(t.Sub(time.Unix(seconds, 0)))
 	m.Seconds = seconds
 	m.Nanos = nanos
 	return m.validateTimestamp()
@@ -70,17 +71,11 @@ func (m *Timestamp) StampFromTime(t time.Time) error {
 
 // Value satisfies the valuer interface for database/sql.  Copied from ptypes.
 func (m *Timestamp) Value() (driver.Value, error) {
-	//loc, err := time.LoadLocation("America/New_York")
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "loading timezone data")
-	//}
 	var t time.Time
 	if m == nil {
 		t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
-		// t = time.Unix(0, 0).In(loc)
 	} else {
 		t = time.Unix(m.Seconds, int64(m.Nanos)).UTC()
-		//t = time.Unix(m.Seconds, int64(m.Nanos)).In(loc)
 	}
 	return t, m.validateTimestamp()
 }
