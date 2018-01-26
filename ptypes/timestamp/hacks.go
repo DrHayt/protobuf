@@ -58,6 +58,7 @@ func (m *Timestamp) Scan(value interface{}) error {
 }
 
 func (m *Timestamp) StampFromTime(t time.Time) error {
+	fmt.Printf("Formatting time: %s\n", t)
 	seconds := t.UTC().Unix()
 	nanos := int32(t.Sub(time.Unix(seconds, 0)))
 	//seconds := t.Unix()
@@ -75,10 +76,11 @@ func (m *Timestamp) Value() (driver.Value, error) {
 	}
 	var t time.Time
 	if m == nil {
-		//t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
-		t = time.Unix(0, 0).In(loc)
+		t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
+		// t = time.Unix(0, 0).In(loc)
 	} else {
-		t = time.Unix(m.Seconds, int64(m.Nanos)).In(loc)
+		t = time.Unix(m.Seconds, int64(m.Nanos)).UTC()
+		//t = time.Unix(m.Seconds, int64(m.Nanos)).In(loc)
 	}
 	return t, m.validateTimestamp()
 }
