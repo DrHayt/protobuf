@@ -58,10 +58,10 @@ func (m *Timestamp) Scan(value interface{}) error {
 }
 
 func (m *Timestamp) StampFromTime(t time.Time) error {
-	//seconds := t.UTC().Unix()
-	//nanos := int32(t.Sub(time.Unix(seconds, 0)))
-	seconds := t.Unix()
+	seconds := t.UTC().Unix()
 	nanos := int32(t.Sub(time.Unix(seconds, 0)))
+	//seconds := t.Unix()
+	//nanos := int32(t.Sub(time.Unix(seconds, 0)))
 	m.Seconds = seconds
 	m.Nanos = nanos
 	return m.validateTimestamp()
