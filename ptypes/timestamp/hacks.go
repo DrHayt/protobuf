@@ -38,7 +38,7 @@ func (m *Timestamp) Scan(value interface{}) error {
 		}
 
 		// How about an eastern standard doohickey.
-		t, err = time.ParseInLocation("2006-01-02 13:04:05", tString, loc)
+		t, err = time.ParseInLocation("2006-01-02 15:04:05", tString, loc)
 		if err == nil {
 			return m.StampFromTime(t)
 		}
