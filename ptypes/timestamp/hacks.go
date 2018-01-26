@@ -50,7 +50,9 @@ func (m *Timestamp) Scan(value interface{}) error {
 		}
 
 	}
-	return errors.New("incompatible type passed, expected time.Time, or string.")
+
+	return errors.Errorf("Unexpected type: %T", value)
+	//return errors.New("incompatible type passed, expected time.Time, or string.")
 }
 
 func (m *Timestamp) StampFromTime(t time.Time) error {
