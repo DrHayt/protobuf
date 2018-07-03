@@ -28,6 +28,12 @@ func (m *Timestamp) Scan(value interface{}) error {
 	// Lets try the strings.
 	tString, ok := value.(string)
 	if ok {
+		// First try to eliminate bogus dates.
+		if tString == "1969-12-31 19:00:00" {
+			// This is the bogus date from the database.
+			// We should totally ignore this value.
+			return nil
+		}
 		// Try RFC3339?
 		t, err := time.ParseInLocation(time.RFC3339, tString, loc)
 		if err == nil {
