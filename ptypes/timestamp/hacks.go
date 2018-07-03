@@ -8,6 +8,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+func (m *Timestamp) IsZero() bool {
+	if m.Nanos == 0 && m.Seconds == 0 {
+		return true
+	}
+	return false
+}
+
+func (m *Timestamp) NilIfZero() *Timestamp {
+	if m.IsZero() {
+		return nil
+	}
+	return m
+}
+
 // Conform to the Scanner interface for database/sql
 func (m *Timestamp) Scan(value interface{}) error {
 
