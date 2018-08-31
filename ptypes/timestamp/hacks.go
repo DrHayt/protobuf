@@ -5,8 +5,19 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mgutz/logxi/v1"
 	"github.com/pkg/errors"
 )
+
+var americaNewYork *time.Location
+
+func init() {
+	var err error
+	americaNewYork, err = time.LoadLocation("America/New_York")
+	if err != nil {
+		log.Error(fmt.Sprintf("Error loading timezone: %v", err))
+	}
+}
 
 func (m *Timestamp) IsZero() bool {
 	if m.Nanos == 0 && m.Seconds == 0 {
@@ -34,35 +45,31 @@ func (m *Timestamp) Scan(value interface{}) error {
 	// FIXME -  Ok, tis is a horrible hack.
 	// Safeguard does not store date/time values with timezone.   This means that all dates/times have been stored in America/New_York.
 	// This means we must interpret them as America/New_York
-	loc, err := time.LoadLocation("America/New_York")
-	if err != nil {
-		return errors.Wrap(err, "loading timezone data")
-	}
 
 	// Lets try the strings.
 	tString, ok := value.(string)
 	if ok {
 		// Try RFC3339?
-		t, err := time.ParseInLocation(time.RFC3339, tString, loc)
+		t, err := time.ParseInLocation(time.RFC3339, tString, americaNewYork)
 		if err == nil {
 			// Success!
 			return m.StampFromTime(t)
 		}
 
 		// How about RFC3339Nano?
-		t, err = time.ParseInLocation(time.RFC3339Nano, tString, loc)
+		t, err = time.ParseInLocation(time.RFC3339Nano, tString, americaNewYork)
 		if err == nil {
 			return m.StampFromTime(t)
 		}
 
 		// How about an eastern standard doohickey.
-		t, err = time.ParseInLocation("2006-01-02 15:04:05", tString, loc)
+		t, err = time.ParseInLocation("2006-01-02 15:04:05", tString, americaNewYork)
 		if err == nil {
 			return m.StampFromTime(t)
 		}
 
 		// Last try, something simple.
-		t, err = time.ParseInLocation("2006-01-02", tString, loc)
+		t, err = time.ParseInLocation("2006-01-02", tString, americaNewYork)
 		if err == nil {
 			return m.StampFromTime(t)
 		}
