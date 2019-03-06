@@ -32,6 +32,7 @@
 package ptypes
 
 import (
+	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
 	"time"
@@ -149,5 +150,36 @@ func TestTimestampNow(t *testing.T) {
 	}
 	if tm.Before(before) || tm.After(after) {
 		t.Errorf("between %v and %v\nTimestamp(TimestampNow()) = %v", before, after, tm)
+	}
+}
+
+func TestTimestampScan(t *testing.T) {
+	ta := assert.New(t)
+
+	tests := []struct {
+		name string
+		value   string
+		wantErr bool
+	}{
+		{
+			name: "6a8f72bd-7d1c-4949-a68a-6a2b31093b8a - scan RFC3339",
+			value: "2002-10-02T10:00:00-05:00",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &tspb.Timestamp{}
+			err := ts.Scan(tt.value)
+
+			//error
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			} else if tt.wantErr {
+				return //nothing else to test
+			}
+
+			ta.Equal(1033570800, ts.Seconds)
+		})
 	}
 }

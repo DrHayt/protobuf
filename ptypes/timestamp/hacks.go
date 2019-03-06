@@ -11,14 +11,6 @@ import (
 
 var americaNewYork *time.Location
 
-func init() {
-	var err error
-	americaNewYork, err = time.LoadLocation("America/New_York")
-	if err != nil {
-		log.Error(fmt.Sprintf("Error loading timezone: %v", err))
-	}
-}
-
 func (m *Timestamp) IsZero() bool {
 	if m.Nanos == 0 && m.Seconds == 0 {
 		return true
@@ -50,26 +42,26 @@ func (m *Timestamp) Scan(value interface{}) error {
 	tString, ok := value.(string)
 	if ok {
 		// Try RFC3339?
-		t, err := time.ParseInLocation(time.RFC3339, tString, americaNewYork)
+		t, err := time.ParseInLocation(time.RFC3339, tString, getAmericaNewYork())
 		if err == nil {
 			// Success!
 			return m.StampFromTime(t)
 		}
 
 		// How about RFC3339Nano?
-		t, err = time.ParseInLocation(time.RFC3339Nano, tString, americaNewYork)
+		t, err = time.ParseInLocation(time.RFC3339Nano, tString, getAmericaNewYork())
 		if err == nil {
 			return m.StampFromTime(t)
 		}
 
 		// How about an eastern standard doohickey.
-		t, err = time.ParseInLocation("2006-01-02 15:04:05", tString, americaNewYork)
+		t, err = time.ParseInLocation("2006-01-02 15:04:05", tString, getAmericaNewYork())
 		if err == nil {
 			return m.StampFromTime(t)
 		}
 
 		// Last try, something simple.
-		t, err = time.ParseInLocation("2006-01-02", tString, americaNewYork)
+		t, err = time.ParseInLocation("2006-01-02", tString, getAmericaNewYork())
 		if err == nil {
 			return m.StampFromTime(t)
 		}
@@ -131,4 +123,15 @@ func (m *Timestamp) validateTimestamp() error {
 		return fmt.Errorf("timestamp: %v: nanos not in range [0, 1e9)", m)
 	}
 	return nil
+}
+
+func getAmericaNewYork() *time.Location {
+	if americaNewYork == nil {
+		var err error
+		americaNewYork, err = time.LoadLocation("America/New_York")
+		if err != nil {
+			log.Error(fmt.Sprintf("Error loading timezone: %v", err))
+		}
+	}
+	return americaNewYork
 }
