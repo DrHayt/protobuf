@@ -183,3 +183,36 @@ func TestTimestampScan(t *testing.T) {
 		})
 	}
 }
+
+
+func TestTimestamp_IsZero(t *testing.T) {
+	tests := []struct {
+		name   string
+		ts *tspb.Timestamp
+		want   bool
+	}{
+		{
+			name: "aa56851e-98b8-47e6-b0ef-f7a1a053666a",
+			want: true,
+		},
+		{
+			name: "c0e4cef6-503b-46d5-8a6d-1d8376b0c1a2",
+			ts: &tspb.Timestamp{
+				Seconds: 1,
+			},
+			want: false,
+		},
+		{
+			name: "2a946b11-5b63-408d-b91d-34a4e3e80e69",
+			ts: &tspb.Timestamp{},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.ts.IsZero(); got != tt.want {
+				t.Errorf("Timestamp.IsZero() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

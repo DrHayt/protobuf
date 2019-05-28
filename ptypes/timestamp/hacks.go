@@ -3,15 +3,17 @@ package timestamp
 import (
 	"database/sql/driver"
 	"fmt"
+	"log"
 	"time"
-
-	"github.com/mgutz/logxi/v1"
 	"github.com/pkg/errors"
 )
 
 var americaNewYork *time.Location
 
 func (m *Timestamp) IsZero() bool {
+	if m == nil {
+		return true
+	}
 	if m.Nanos == 0 && m.Seconds == 0 {
 		return true
 	}
@@ -130,7 +132,7 @@ func getAmericaNewYork() *time.Location {
 		var err error
 		americaNewYork, err = time.LoadLocation("America/New_York")
 		if err != nil {
-			log.Error(fmt.Sprintf("Error loading timezone: %v", err))
+			log.Printf("Error loading timezone: %v", err)
 		}
 	}
 	return americaNewYork
