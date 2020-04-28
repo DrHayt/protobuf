@@ -90,7 +90,7 @@ func (m *Timestamp) Value() (driver.Value, error) {
 	if m == nil {
 		t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
 	} else {
-		t = time.Unix(m.Seconds, int64(m.Nanos)).UTC()
+		t = time.Unix(m.Seconds, int64(m.Nanos)).In(getAmericaNewYork())
 	}
 	return t, m.validateTimestamp()
 }
