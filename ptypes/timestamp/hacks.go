@@ -88,7 +88,7 @@ func (m *Timestamp) StampFromTime(t time.Time) error {
 func (m *Timestamp) Value() (driver.Value, error) {
 	var t time.Time
 	if m == nil {
-		t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
+		t = time.Unix(0, 0).In(getAmericaNewYork())// treat nil like the empty Timestamp
 	} else {
 		t = time.Unix(m.Seconds, int64(m.Nanos)).In(getAmericaNewYork())
 	}
